@@ -1,169 +1,95 @@
 #include "led.h"
 
-/****************************************************
- * Led
- ****************************************************/
-
-Led::Led(byte pin, byte amplitude) : _pin(pin), _amplitude(amplitude), _startTime(0), _state(LedState::UNINITIALIZED) {}
+Led::Led(byte pin, byte brightness)
+    : _pin(pin),
+      _state(LedState::UNINITIALIZED),
+      _brightness(brightness) {}
 
 Led::~Led()
 {
-    if (getState() == LedState::UNINITIALIZED)
+    const LedState state = getState();
+    const byte pin = getPin();
+
+    if (state == LedState::UNINITIALIZED)
         return;
 
-    analogWrite(getPin(), 0);
+    // Sets the LED output to 0.
+    analogWrite(pin, 0);
 }
 
-byte Led::getPin()
+const byte Led::getPin()
 {
     return _pin;
 }
 
-LedState Led::getState()
+const LedState Led::getState()
 {
     return _state;
 }
 
-byte Led::getAmplitude()
+const byte Led::getBrightness()
 {
-    return _amplitude;
+    return _brightness;
 }
 
-unsigned long Led::getStartTime()
+void Led::setState(LedState state)
 {
-    return _startTime;
+    _state = state;
+}
+
+void Led::setBrightness(byte brightness)
+{
+    _brightness = brightness;
 }
 
 void Led::init()
 {
-    pinMode(getPin(), OUTPUT);
-    analogWrite(getPin(), 0);
-    _state = LedState::READY;
+    const byte pin = getPin();
+
+    // Configures the pin to use PWM and set the LED output to 0.
+    pinMode(pin, OUTPUT);
+    analogWrite(pin, 0);
+
+    setState(LedState::READY);
 }
 
-void Led::start()
+void Led::turnOn()
 {
-    if (getState() == LedState::UNINITIALIZED)
+    const LedState state = getState();
+
+    if (state == LedState::UNINITIALIZED)
         return;
 
-    _startTime = millis();
-    _state = LedState::RUNNING;
+    setState(LedState::RUNNING);
 }
 
-void Led::stop()
+void Led::turnOff()
 {
-    if (getState() == LedState::UNINITIALIZED)
+    const LedState state = getState();
+
+    if (state == LedState::UNINITIALIZED)
         return;
 
-    _state = LedState::READY;
+    setState(LedState::READY);
 }
 
-void Led::reset()
+const void Led::display()
 {
-    stop();
-    start();
-}
+    const LedState state = getState();
+    const byte pin = getPin();
+    const byte brightness = getBrightness();
 
-void Led::display()
-{
-    unsigned long time = millis() - getStartTime();
-
-    switch (getState())
+    // Sets the LED output to `brightness` if RUNNING, or to 0 if READY. No-ops otherwise.
+    switch (state)
     {
     case LedState::READY:
-        analogWrite(getPin(), 0);
+        analogWrite(pin, 0);
         break;
     case LedState::RUNNING:
-        analogWrite(getPin(), getOutput(time));
+        analogWrite(pin, brightness);
         break;
     case LedState::UNINITIALIZED:
     default:
         break;
     }
-}
-
-byte Led::getOutput(unsigned long time)
-{
-    return 0;
-}
-
-/****************************************************
- * SolidLed
- ****************************************************/
-
-SolidLed::SolidLed(byte pin) : Led(pin) {}
-
-// y(t) = A
-byte SolidLed::getOutput(unsigned long time)
-{
-    byte output = getAmplitude();
-    return output;
-}
-
-/****************************************************
- * CyclicLed
- ****************************************************/
-
-CyclicLed::CyclicLed(byte pin, unsigned long period) : Led(pin), _period(period) {}
-
-unsigned long CyclicLed::getPeriod()
-{
-    return _period;
-}
-
-/****************************************************
- * PulsingLed
- ****************************************************/
-
-PulsingLed::PulsingLed(byte pin, unsigned long period, unsigned long dutyCycle) : CyclicLed(pin, period), _dutyCycle(dutyCycle) {}
-
-unsigned long PulsingLed::getDutyCycle()
-{
-    return _dutyCycle;
-}
-
-// y(t) = {A if t < D, 0 otherwise}
-byte PulsingLed::getOutput(unsigned long time)
-{
-    byte output = time % getPeriod() < getDutyCycle() ? getAmplitude() : 0;
-    return output;
-}
-
-/****************************************************
- * SinusoidalLed
- ****************************************************/
-
-SinusoidalLed::SinusoidalLed(byte pin, unsigned long period) : CyclicLed(pin, period) {}
-
-// y(t) = 1/2 A (sin(2 pi t / T) + 1)
-byte SinusoidalLed::getOutput(unsigned long time)
-{
-    byte output = getAmplitude() * (sin(2 * (time % getPeriod()) * PI / getPeriod()) + 1) / 2;
-    return output;
-}
-
-/****************************************************
- * TriangularLed
- ****************************************************/
-
-TriangularLed::TriangularLed(byte pin, unsigned long period) : CyclicLed(pin, period) {}
-
-// y(t) = A |t - 1/2 * T| / T
-byte TriangularLed::getOutput(unsigned long time)
-{
-    byte output = getAmplitude() * abs((time % getPeriod()) - getPeriod() / 2) / getPeriod();
-    return output;
-}
-
-/****************************************************
- * SawToothLed
- ****************************************************/
-
-SawToothLed::SawToothLed(byte pin, unsigned long period) : CyclicLed(pin, period) {}
-
-// y(t) = A t / T
-byte SawToothLed::getOutput(unsigned long time)
-{
-    byte output = getAmplitude() * (time % getPeriod()) / getPeriod();
-    return output;
 }

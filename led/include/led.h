@@ -3,10 +3,15 @@
 
 #include <Arduino.h>
 
-#define DEFAULT_PERIOD 1000
-#define DEFAULT_DUTY_CYCLE 750
-#define DEFAULT_AMPLITUDE 255
+#define DEFAULT_PIN 11
+#define DEFAULT_BRIGHTNESS 255
 
+/**
+ * The operational state of an LED. All LEDs start UNINITIALIZED.
+ * From UNINITIALIZED, it can transition to READY.
+ * From READY, it can transition RUNNING.
+ * From RUNNING, it can transition to READY.
+ */
 enum class LedState
 {
     UNINITIALIZED,
@@ -14,76 +19,37 @@ enum class LedState
     RUNNING
 };
 
+/**
+ * An LED component with the ability to set its brightness using PWM (Pulse Width Modulation).
+ */
 class Led
 {
 private:
     byte _pin;
-    byte _amplitude;
-    unsigned long _startTime;
     LedState _state;
+    byte _brightness;
 
 public:
-    Led(byte pin = LED_BUILTIN, byte amplitude = DEFAULT_AMPLITUDE);
+    Led(byte pin = DEFAULT_PIN, byte brightness = DEFAULT_BRIGHTNESS);
     ~Led();
-    byte getPin();
-    LedState getState();
-    byte getAmplitude();
-    unsigned long getStartTime();
+
+    /* Getters */
+
+    const byte getPin();
+    const LedState getState();
+    const byte getBrightness();
+
+    /* Setters */
+
+    void setState(LedState state);
+    void setBrightness(byte _brightness);
+    
+    /* Other methods */
+
     void init();
-    void start();
-    void stop();
-    void reset();
-    void display();
-    virtual byte getOutput(unsigned long time);
-};
-
-class SolidLed : public Led
-{
-public:
-    SolidLed(byte pin = LED_BUILTIN);
-    byte getOutput(unsigned long time) override;
-};
-
-class CyclicLed : public Led
-{
-private:
-    unsigned long _period;
-
-public:
-    CyclicLed(byte pin = LED_BUILTIN, unsigned long period = DEFAULT_PERIOD);
-    unsigned long getPeriod();
-};
-
-class PulsingLed : public CyclicLed
-{
-private:
-    unsigned long _dutyCycle;
-
-public:
-    PulsingLed(byte pin = LED_BUILTIN, unsigned long period = DEFAULT_PERIOD, unsigned long dutyCycle = DEFAULT_DUTY_CYCLE);
-    unsigned long getDutyCycle();
-    byte getOutput(unsigned long time) override;
-};
-
-class SinusoidalLed : public CyclicLed
-{
-public:
-    SinusoidalLed(byte pin = LED_BUILTIN, unsigned long period = DEFAULT_PERIOD);
-    byte getOutput(unsigned long time) override;
-};
-
-class TriangularLed : public CyclicLed
-{
-public:
-    TriangularLed(byte pin = LED_BUILTIN, unsigned long period = DEFAULT_PERIOD);
-    byte getOutput(unsigned long time) override;
-};
-
-class SawToothLed : public CyclicLed
-{
-public:
-    SawToothLed(byte pin = LED_BUILTIN, unsigned long period = DEFAULT_PERIOD);
-    byte getOutput(unsigned long time) override;
+    void turnOn();
+    void turnOff();
+    const void display();
 };
 
 #endif
