@@ -4,7 +4,7 @@
 #include <InputOutput.h>
 #include <Board.h>
 
-class DigitalInputPin : public DigitalInput, public Component
+class DigitalInputPin : public DigitalInput
 {
 private:
     Board *board;
@@ -21,7 +21,7 @@ public:
     const bool get_value() override;
 };
 
-class DigitalOutputPin : public DigitalOutput, public Component
+class DigitalOutputPin : public DigitalOutput
 {
 private:
     Board *board;
@@ -37,7 +37,7 @@ public:
     void set_value(const bool value) override;
 };
 
-class AnalogInputPin : public AnalogInput, public Component
+class AnalogInputPin : public AnalogInput
 {
 private:
     Board *board;
@@ -53,7 +53,7 @@ public:
     const float get_value() override;
 };
 
-class AnalogOutputPin : public AnalogOutput, public Component
+class AnalogOutputPin : public AnalogOutput
 {
 private:
     Board *board;

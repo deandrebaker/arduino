@@ -4,7 +4,7 @@
 #include <Component.h>
 
 // An interface for a single digital input.
-class DigitalInput
+class DigitalInput : public Component
 {
 public:
     virtual ~DigitalInput() = default;
@@ -13,7 +13,7 @@ public:
 };
 
 // An interface for a single digital output.
-class DigitalOutput
+class DigitalOutput : public Component
 {
 public:
     virtual ~DigitalOutput() = default;
@@ -22,7 +22,7 @@ public:
 };
 
 // An interface for a single analog input.
-class AnalogInput
+class AnalogInput : public Component
 {
 public:
     virtual ~AnalogInput() = default;
@@ -31,7 +31,7 @@ public:
 };
 
 // An interface for a single analog output.
-class AnalogOutput
+class AnalogOutput : public Component
 {
 public:
     virtual ~AnalogOutput() = default;
