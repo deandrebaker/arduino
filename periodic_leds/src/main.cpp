@@ -1,22 +1,28 @@
-#include <Arduino.h>
-#include "periodic_led.h"
+#include <periodic_led.h>
+#include <Pin/Pin.h>
 
 #define LED_COUNT 5
 #define ON_TIME 9000
 #define TOTAL_TIME 10000
 
+ArduinoBoard board = ArduinoBoard();
 boolean started = false;
 PeriodicLed *periodicLeds[LED_COUNT];
-ConstantLed constantLed = ConstantLed(11);
-RectangularLed pulsingLed = RectangularLed(10);
-SinusoidalLed sinusoidalLed = SinusoidalLed(9);
-TriangularLed triangularLed = TriangularLed(6);
-SawToothLed sawToothLed = SawToothLed(5);
+AnalogOutputPin pin_11 = AnalogOutputPin(&board, 11);
+AnalogOutputPin pin_10 = AnalogOutputPin(&board, 10);
+AnalogOutputPin pin_9 = AnalogOutputPin(&board, 9);
+AnalogOutputPin pin_6 = AnalogOutputPin(&board, 6);
+AnalogOutputPin pin_5 = AnalogOutputPin(&board, 5);
+ConstantLed constantLed = ConstantLed(&pin_11);
+RectangularLed pulsingLed = RectangularLed(&pin_10);
+SinusoidalLed sinusoidalLed = SinusoidalLed(&pin_9);
+TriangularLed triangularLed = TriangularLed(&pin_6);
+SawToothLed sawToothLed = SawToothLed(&pin_5);
 
-void initLeds();
-void turnOnLeds();
-void turnOffLeds();
-void displayLeds();
+void init_leds();
+void turn_on_leds();
+void turn_off_leds();
+void display_leds();
 
 void setup()
 {
@@ -26,7 +32,7 @@ void setup()
   periodicLeds[3] = &triangularLed;
   periodicLeds[4] = &sawToothLed;
 
-  initLeds();
+  init_leds();
 }
 
 void loop()
@@ -35,19 +41,19 @@ void loop()
 
   if (time % TOTAL_TIME < ON_TIME && !started)
   {
-    turnOnLeds();
+    turn_on_leds();
     started = true;
   }
   else if (time % TOTAL_TIME >= ON_TIME && started)
   {
-    turnOffLeds();
+    turn_off_leds();
     started = false;
   }
 
-  displayLeds();
+  display_leds();
 }
 
-void initLeds()
+void init_leds()
 {
   for (byte i = 0; i < LED_COUNT; i++)
   {
@@ -55,23 +61,23 @@ void initLeds()
   }
 }
 
-void turnOnLeds()
+void turn_on_leds()
 {
   for (byte i = 0; i < LED_COUNT; i++)
   {
-    periodicLeds[i]->turnOn();
+    periodicLeds[i]->turn_on();
   }
 }
 
-void turnOffLeds()
+void turn_off_leds()
 {
   for (byte i = 0; i < LED_COUNT; i++)
   {
-    periodicLeds[i]->turnOff();
+    periodicLeds[i]->turn_off();
   }
 }
 
-void displayLeds()
+void display_leds()
 {
   for (byte i = 0; i < LED_COUNT; i++)
   {
